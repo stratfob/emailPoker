@@ -1,9 +1,9 @@
 import db
 
 def addToPot(gameId, player, chips, action):
-    _,_,_,_,_,pot = db.getGame(gameId)
+    _,_,_,_,_,pot,_,_ = db.getGame(gameId)
     playerTuple = db.getPlayer(gameId, player)
-    _,_,address,name,stack,_,_ = playerTuple
+    _,_,address,name,stack,_,_,_,_ = playerTuple
     logStatement = ""
     chipsPutIn = chips
     
@@ -16,8 +16,10 @@ def addToPot(gameId, player, chips, action):
         logStatement += "posted the small blind of " + str(chipsPutIn) + " chips."
     elif action == "bb": # big blind
         logStatement += "posted the big blind of " + str(chipsPutIn) + " chips."
-   
-    #TODO add more actions
+    elif action == "call":
+        logStatement += "calls " + str(chipsPutIn) + " chips."
+    elif action == "raise":
+        logStatement += "raises to " + str(chipsPutIn) + " chips."
     
     #update player stack
     db.updatePlayer(gameId, player, "stack = " + str(stack - chipsPutIn))

@@ -10,8 +10,9 @@ def createGameTable():
     try:
         c.execute('''CREATE TABLE game
               (ID integer, board text, currentPlayer integer, dealer integer,
-              phase integer, pot integer)''')
+              phase integer, pot integer, betToMatch integer, handLog text)''')
         conn.commit()
+        return "Created game table successfully"
     except:
         return "Table Exists"
     
@@ -19,8 +20,9 @@ def createPlayerTable():
     try:
         c.execute('''CREATE TABLE player
               (gameID integer, ID integer, address text, name text, 
-              stack integer, cards text, isAllIn integer)''')
+              stack integer, cards text, isAllIn integer, folded integer, eliminated integer)''')
         conn.commit()
+        return "Created player table successfully"
     except:
         return "Table Exists"
     
@@ -29,14 +31,17 @@ def createReadMailTable():
         c.execute('''CREATE TABLE readMail
               (mailId text)''')
         conn.commit()
+        return "Created read mail table successfully"
     except:
         return "Table Exists"
     
 # Inserts 
 def addPlayer(gameId, playerId, address, name, stack):
     try:
-        c.execute("""INSERT INTO player(gameId, ID, address, name, stack, cards, isAllIn)
-              VALUES(?,?,?,?,?,?,?)""", (gameId, playerId, address, name, stack, "", 0))
+        c.execute("""INSERT INTO player(gameId, ID, address, name, 
+                                        stack, cards, isAllIn, folded, eliminated)
+              VALUES(?,?,?,?,?,?,?,?,?)""", 
+              (gameId, playerId, address, name, stack, "", 0, 0, 0))
         conn.commit()
         return "Player " + name + " added successfully"
     except Exception as e:
@@ -49,8 +54,9 @@ def addGame():
         c.execute("SELECT * FROM game WHERE ID = ?", (ID,))
         rows = c.fetchall()
         if len(rows)==0:
-            c.execute("""INSERT INTO game(ID, board, currentPlayer, dealer, phase, pot)
-                  VALUES(?,?,?,?,?,?)""", (ID, "", 0, 0, 0, 0))
+            c.execute("""INSERT INTO game(ID, board, currentPlayer, 
+                                          dealer, phase, pot, betToMatch, handLog)
+                  VALUES(?,?,?,?,?,?,?,?)""", (ID, "", 0, 0, 0, 0, 0,""))
             conn.commit()
             unique = True
             return ID
@@ -95,6 +101,7 @@ def updatePlayer(gameId, ID, updatesString):
     try:
         c.execute("UPDATE player SET " + updatesString + " WHERE ID = ? and gameID = ?", (ID, gameId))
         conn.commit()
+        return "Player " + str(ID) + " in game " + str(gameId) + " updated successfully."
     except Exception as e:
         return e
 
