@@ -31,11 +31,16 @@ def startHand(gameId):
     smallBlind = 1
     bigBlind = 2
     
+    
+    #TODO: Account for eliminations
     #dealer moves to left
     dealerPos = (dealer + 1) % numberOfPlayers
     smallBlindPos = (dealerPos + 1) % numberOfPlayers
     bigBlindPos = (dealerPos + 2) % numberOfPlayers
     UTG = (dealerPos + 3) % numberOfPlayers
+    
+    for i in range(numberOfPlayers):
+        db.updatePlayer(gameId, i, "amountPutInPot = 0")
     
     
     handLog = "New Hand\r\n--------------------------------------\r\n" 
@@ -55,11 +60,12 @@ def startHand(gameId):
     deck.shuffle()
     # Deal cards and set playes to not be folded
     for i in range(numberOfPlayers):
-        _,_,_,_,_,_,_,_,eliminated = db.getPlayer(gameId, i)
+        _,_,_,_,_,_,_,_,eliminated,_ = db.getPlayer(gameId, i)
         
         if eliminated == 0: # not eliminated
             hand = deck.deal(2)
-            db.updatePlayer(gameId, i, "folded = 0, cards = \"" + str(hand[0]) + ":" + str(hand[1]) + "\"")
+            db.updatePlayer(gameId, i, "folded = 0, cards = \"" 
+                            + str(hand[0]) + ":" + str(hand[1]) + "\"")
             
     return UTG
     

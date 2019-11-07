@@ -20,9 +20,11 @@ def fakeSendMail(receivers, title, body):
     
 
 def playerInfoLog(gameId, playerId):
-    _,_,_,_,stack,cards,_,_,_ = db.getPlayer(gameId, playerId)
+    _,_,_,_,stack,cards,_,_,_,amountPutInPot = db.getPlayer(gameId, playerId)
     string = "\r\nIt is your turn.\r\nYour cards are: " + cards.split(":")[0] + " and " + cards.split(":")[1]
     string += "\r\nYour stack is " + str(stack) + " chips."
+    if not amountPutInPot == 0:
+        string += "You have already put in " + str(amountPutInPot) + " chips into the pot."
     return string
 
 def instructions():
@@ -44,10 +46,10 @@ def readMail():
         
     db.addReadMail(mail_id)
     
-    #print("FROM:", mail.from_addr)
-    #print("TO:", mail.to)
-    #print("TITLE:", mail.title)
-    #print("BODY:", mail.body)
+    print("FROM:", mail.from_addr)
+    print("TO:", mail.to)
+    print("TITLE:", mail.title)
+    print("BODY:", mail.body)
     
     if mail.title.upper() == "NEW":
         #make new game
@@ -56,10 +58,27 @@ def readMail():
         fakeSendMail(db.getPlayer(gameId, firstPlayer)[2], gameId, 
                      db.getGame(gameId)[7] + playerInfoLog(gameId,firstPlayer)
                      + instructions())
-    else:
-        #look for game with id in title
-        pass
-    
+        
+    #look for game with id in title
+    elif not len(db.getGame(mail.title[4:])) == 0:
+        
+        gameId = mail.title[4:]
+        playerEmail = mail.from_addr
+        
+        print(mail.body.upper().startswith("CALL"))
+        
+        if mail.body.upper().startswith("CALL"):
+            pass
+        elif mail.body.upper().startswith("RAISE"):
+            pass
+        elif mail.body.upper().startswith("FOLD"):
+            pass
+        elif mail.body.upper().startswith("ALL IN"):
+            pass
+        elif mail.body.upper().startswith("CHECK"):
+            pass
+        else:
+            fakeSendMail(playerEmail, gameId, "Invalid command. " + instructions())
 
 def main():
     db.init()    

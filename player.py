@@ -3,7 +3,7 @@ import db
 def addToPot(gameId, player, chips, action):
     _,_,_,_,_,pot,_,_ = db.getGame(gameId)
     playerTuple = db.getPlayer(gameId, player)
-    _,_,address,name,stack,_,_,_,_ = playerTuple
+    _,_,address,name,stack,_,_,_,_,amountPutInPot = playerTuple
     logStatement = ""
     chipsPutIn = chips
     
@@ -22,7 +22,8 @@ def addToPot(gameId, player, chips, action):
         logStatement += "raises to " + str(chipsPutIn) + " chips."
     
     #update player stack
-    db.updatePlayer(gameId, player, "stack = " + str(stack - chipsPutIn))
+    db.updatePlayer(gameId, player, "stack = " + str(stack - chipsPutIn) 
+        + ", amountPutInPot = " + str(amountPutInPot + chipsPutIn))
     
     #update pot
     db.updateGame(gameId, "pot = " + str(pot + chipsPutIn))

@@ -20,7 +20,8 @@ def createPlayerTable():
     try:
         c.execute('''CREATE TABLE player
               (gameID integer, ID integer, address text, name text, 
-              stack integer, cards text, isAllIn integer, folded integer, eliminated integer)''')
+              stack integer, cards text, isAllIn integer, folded integer, 
+              eliminated integer, amountPutInPot integer)''')
         conn.commit()
         return "Created player table successfully"
     except:
@@ -39,9 +40,10 @@ def createReadMailTable():
 def addPlayer(gameId, playerId, address, name, stack):
     try:
         c.execute("""INSERT INTO player(gameId, ID, address, name, 
-                                        stack, cards, isAllIn, folded, eliminated)
-              VALUES(?,?,?,?,?,?,?,?,?)""", 
-              (gameId, playerId, address, name, stack, "", 0, 0, 0))
+                                        stack, cards, isAllIn, folded,
+                                        eliminated, amountPutInPot)
+              VALUES(?,?,?,?,?,?,?,?,?,?)""", 
+              (gameId, playerId, address, name, stack, "", 0, 0, 0, 0))
         conn.commit()
         return "Player " + name + " added successfully"
     except Exception as e:
