@@ -60,16 +60,19 @@ def startHand(gameId):
     deck.shuffle()
     # Deal cards and set playes to not be folded
     for i in range(numberOfPlayers):
-        _,_,_,_,_,_,_,_,eliminated,_ = db.getPlayer(gameId, i)
+        _,_,_,_,_,_,_,_,eliminated,_,_ = db.getPlayer(gameId, i)
         
         if eliminated == 0: # not eliminated
             hand = deck.deal(2)
-            db.updatePlayer(gameId, i, "folded = 0, cards = \"" 
+            db.updatePlayer(gameId, i, "folded = 0, isChecked = 0, cards = \"" 
                             + str(hand[0]) + ":" + str(hand[1]) + "\"")
             
     return UTG
+
+def checkForRoundCompletion(gameId):
+    pass
     
-        
-    
+def nextPlayer(gameId):
+    pass
     
     

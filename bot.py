@@ -3,6 +3,7 @@ import easyimap
 import db
 import game
 import credentials
+import player
 
 login = credentials.log
 password = credentials.passw
@@ -20,7 +21,9 @@ def fakeSendMail(receivers, title, body):
     
 
 def playerInfoLog(gameId, playerId):
-    _,_,_,_,stack,cards,_,_,_,amountPutInPot = db.getPlayer(gameId, playerId)
+    _,_,_,_,stack,cards,_,_,_,amountPutInPot,_ = db.getPlayer(gameId, playerId)
+    #TODO: return board and bet to match to player
+    _,board,_,_,_,pot,betToMatch,handLog = db.getGame(gameId)
     string = "\r\nIt is your turn.\r\nYour cards are: " + cards.split(":")[0] + " and " + cards.split(":")[1]
     string += "\r\nYour stack is " + str(stack) + " chips."
     if not amountPutInPot == 0:
@@ -42,9 +45,8 @@ def readMail():
     mail = imapper.mail(mail_id)
     
     # If new email
-    #if not db.isMailRead(mail_id):
-        
-    db.addReadMail(mail_id)
+    if not db.isMailRead(mail_id):
+        db.addReadMail(mail_id)
     
     print("FROM:", mail.from_addr)
     print("TO:", mail.to)
@@ -55,6 +57,8 @@ def readMail():
         #make new game
         gameId = game.newGame(mail.body)
         firstPlayer = game.startGame(gameId)
+        
+        #Send first mail
         fakeSendMail(db.getPlayer(gameId, firstPlayer)[2], gameId, 
                      db.getGame(gameId)[7] + playerInfoLog(gameId,firstPlayer)
                      + instructions())
@@ -63,12 +67,15 @@ def readMail():
     elif not len(db.getGame(mail.title[4:])) == 0:
         
         gameId = mail.title[4:]
-        playerEmail = mail.from_addr
+        playerEmail = mail.from_addr[mail.from_addr.find('<')+1:mail.from_addr.rfind('>')]       
+        playerTuple = db.getPlayerByEmail(gameId, playerEmail)
         
-        print(mail.body.upper().startswith("CALL"))
         
         if mail.body.upper().startswith("CALL"):
-            pass
+            player.call(gameId, playerTuple)
+            fakeSendMail(playerTuple[2], gameId, 
+                     db.getGame(gameId)[7] + playerInfoLog(gameId,playerTuple[1])
+                     + instructions())
         elif mail.body.upper().startswith("RAISE"):
             pass
         elif mail.body.upper().startswith("FOLD"):

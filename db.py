@@ -21,7 +21,7 @@ def createPlayerTable():
         c.execute('''CREATE TABLE player
               (gameID integer, ID integer, address text, name text, 
               stack integer, cards text, isAllIn integer, folded integer, 
-              eliminated integer, amountPutInPot integer)''')
+              eliminated integer, amountPutInPot integer, isChecked integer)''')
         conn.commit()
         return "Created player table successfully"
     except:
@@ -41,9 +41,9 @@ def addPlayer(gameId, playerId, address, name, stack):
     try:
         c.execute("""INSERT INTO player(gameId, ID, address, name, 
                                         stack, cards, isAllIn, folded,
-                                        eliminated, amountPutInPot)
-              VALUES(?,?,?,?,?,?,?,?,?,?)""", 
-              (gameId, playerId, address, name, stack, "", 0, 0, 0, 0))
+                                        eliminated, amountPutInPot, isChecked)
+              VALUES(?,?,?,?,?,?,?,?,?,?,?)""", 
+              (gameId, playerId, address, name, stack, "", 0, 0, 0, 0, 0))
         conn.commit()
         return "Player " + name + " added successfully"
     except Exception as e:
@@ -89,6 +89,10 @@ def getGame(gameId):
 
 def getPlayer(gameID, playerId):
     c.execute("SELECT * FROM player WHERE ID = ? AND gameID = ?", (playerId, gameID))
+    return c.fetchall()[0]
+
+def getPlayerByEmail(gameId, playerEmail):
+    c.execute("SELECT * FROM player WHERE address = ? AND gameID = ?", (playerEmail, gameId))
     return c.fetchall()[0]
 
 #Updates
