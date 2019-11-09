@@ -20,6 +20,8 @@ def addToPot(gameId, player, chips, action):
         logStatement += "calls " + str(chipsPutIn) + " chips."
     elif action == "raise":
         logStatement += "raises to " + str(chipsPutIn) + " chips."
+    elif action == "check":
+        logStatement += "checks."
     
     #update player stack
     db.updatePlayer(gameId, player, "stack = " + str(stack - chipsPutIn) 
@@ -40,11 +42,16 @@ def call(gameId, playerTuple):
     
     chipsToPutIn = betToMatch - amountPutInPot
     
-    logStatement = handLog + addToPot(gameId, playerId, chipsToPutIn, "call")
+    logStatement = ""
+    if chipsToPutIn == 0:
+        #Check
+        logStatement = handLog + "\r\n" + addToPot(gameId, playerId, chipsToPutIn, "check")
+    else:
+        logStatement = handLog + "\r\n" + addToPot(gameId, playerId, chipsToPutIn, "call")
     
     #update player stack
     db.updatePlayer(gameId, playerId, "isChecked = 1")
-    db.updateGame(gameId, "handLog = \"\r\n" + logStatement + "\"")
+    db.updateGame(gameId, "handLog = \"" + logStatement + "\"")
     
 
 def raiseTo(player, chips):
