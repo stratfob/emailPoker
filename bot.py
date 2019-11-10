@@ -23,7 +23,6 @@ def fakeSendMail(receivers, title, body):
 
 def playerInfoLog(gameId, playerId):
     _,_,_,name,stack,cards,_,_,_,amountPutInPot,_,amountPutInPotThisRound = db.getPlayer(gameId, playerId)
-    #TODO: return board and bet to match to player
     _,board,_,_,_,pot,betToMatch,handLog = db.getGame(gameId)
     string = "\r\n\r\nIt is your turn " + name + ".\r\nYour cards are: " + cards.split(":")[0] + " and " + cards.split(":")[1]
     if board != "":
@@ -35,6 +34,8 @@ def playerInfoLog(gameId, playerId):
     string += "\r\nYour stack is " + str(stack) + " chips."
     if not amountPutInPotThisRound == 0:
         string += "You have already put in " + str(amountPutInPotThisRound) + " chips into the pot."
+    if betToMatch - amountPutInPotThisRound != 0:
+        string += "\r\nTo call you'll need to put in " + str(betToMatch - amountPutInPotThisRound) + " chips."
     return string
 
 def instructions():
@@ -146,11 +147,11 @@ def main():
         if firstPlayer == 0:
             ID = str(uuid.uuid4()).replace('-','')
             readMail(ID, Mail("Re: " + gameId, "Call", "<ben.e.stratford@gmail.com>"))
-            readMail(ID, Mail("Re: " + gameId, "Fold", "<benstratford586@gmail.com>"))
+            readMail(ID, Mail("Re: " + gameId, "Call", "<benstratford586@gmail.com>"))
         else:
             ID = str(uuid.uuid4()).replace('-','')
             readMail(ID, Mail("Re: " + gameId, "Call", "<benstratford586@gmail.com>"))
-            readMail(ID, Mail("Re: " + gameId, "Fold", "<ben.e.stratford@gmail.com>"))
+            readMail(ID, Mail("Re: " + gameId, "Call", "<ben.e.stratford@gmail.com>"))
            
 
     db.closeConn()
