@@ -146,6 +146,7 @@ def getWinners(gameId, players):
     evaluator = Evaluator()
     boardCards = []
     rankings = {}
+    
     _,board,_,_,_,_,_,_ = db.getGame(gameId)
     for i in board.split(":"):
         boardCards.append(pyDealerCardToDeucesCard(i))
@@ -161,7 +162,7 @@ def getWinners(gameId, players):
     winners = []
     for i in rankings:
         if rankings[i] == minValue:
-            winners.append(i)
+            winners.append([i, evaluator.class_to_string(evaluator.get_rank_class(minValue))])
     
     return winners
 
@@ -197,10 +198,11 @@ def showdown(gameId):
         
         for i in winners:
             handLog = db.getGame(gameId)[7]
-            playerTuple = db.getPlayer(gameId, i)
-            #TODO: show hand ranking
+            playerTuple = db.getPlayer(gameId, i[0])
+            
             logStatement = playerTuple[3] + " shows " + playerTuple[5].split(":")[0] + ", " +  playerTuple[5].split(":")[1]
-            logStatement += "\r\n" + player.takeFromPot(gameId, i, thisPot//len(winners))
+            logStatement += " (" + i[1] + ")"
+            logStatement += "\r\n" + player.takeFromPot(gameId, i[0], thisPot//len(winners))
             db.updateGame(gameId, "handLog = \"" + handLog + "\r\n" + logStatement + "\"")
         
         newIsStillIn = []
