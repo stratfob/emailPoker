@@ -54,7 +54,7 @@ def startHand(gameId):
                   ", board = '', phase = 0, pot = 0, betToMatch = " + str(bigBlind))
     
     handLog += (player.addToPot(gameId, smallBlindPos, smallBlind, "sb") + "\r\n")
-    handLog += (player.addToPot(gameId, bigBlindPos, bigBlind, "bb") + "\r\n")
+    handLog += (player.addToPot(gameId, bigBlindPos, bigBlind, "bb"))
 
     db.updateGame(gameId, "handLog = \"" + handLog + "\"")
   
@@ -109,8 +109,9 @@ def nextRound(gameId):
         return startHand(gameId)
     else:
         newPhase = phase + 1
-        newCurrentPlayer = dealer + 1
         numberOfPlayers = db.numberOfPlayersInGame(gameId)
+        newCurrentPlayer = (dealer + 1) % numberOfPlayers
+        
         db.updateGame(gameId, "phase = " + str(newPhase) + ", currentPlayer = " + str(newCurrentPlayer))
         for i in range(numberOfPlayers):
             db.updatePlayer(gameId, i, "isChecked = 0, amountPutInPot = 0")
@@ -120,12 +121,21 @@ def nextRound(gameId):
         
         if newPhase == 1:
             newBoard = deck.deal(3)
+            
+            handLog = handLog + "\r\nFlop : " + str(newBoard[0]) + ", " + str(newBoard[1]) + ", " + str(newBoard[2])
             db.updateGame(gameId, "board = \"" + str(newBoard[0]) + ":" +
-                          str(newBoard[1]) + ":" + str(newBoard[2]) + "\", betToMatch = 0")
+                          str(newBoard[1]) + ":" + str(newBoard[2]) + 
+                          "\", betToMatch = 0, handLog = \"" + handLog + "\"")
         elif newPhase == 2 or newPhase == 3:
             newBoard = deck.deal(1)
-            db.updateGame(gameId, "board = \"" + board + ":" + str(newBoard[0]) + ", betToMatch = 0")
+            if newPhase == 2:
+                handLog = handLog + "\r\nTurn : " + str(newBoard[0])
+            else:
+                handLog = handLog + "\r\nRiver : " + str(newBoard[0])
+            db.updateGame(gameId, "board = \"" + board + ":" + str(newBoard[0]) +
+                          "\", betToMatch = 0, handLog = \"" + handLog + "\"")
             
+        
         return newCurrentPlayer
             
 

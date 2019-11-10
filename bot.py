@@ -24,7 +24,13 @@ def playerInfoLog(gameId, playerId):
     _,_,_,name,stack,cards,_,_,_,amountPutInPot,_ = db.getPlayer(gameId, playerId)
     #TODO: return board and bet to match to player
     _,board,_,_,_,pot,betToMatch,handLog = db.getGame(gameId)
-    string = "\r\nIt is your turn " + name + ".\r\nYour cards are: " + cards.split(":")[0] + " and " + cards.split(":")[1]
+    string = "\r\n\r\nIt is your turn " + name + ".\r\nYour cards are: " + cards.split(":")[0] + " and " + cards.split(":")[1]
+    if board != "":
+        string += "\r\nThe board is : "
+        for card in board.split(":"):
+            string += str(card) + ", "
+        string = string[:-2] # get rid of trailing comma
+    string += "\r\nThe pot is " + str(pot) + " chips."
     string += "\r\nYour stack is " + str(stack) + " chips."
     if not amountPutInPot == 0:
         string += "You have already put in " + str(amountPutInPot) + " chips into the pot."
@@ -50,10 +56,6 @@ def readMail():
         db.addReadMail(mail_id)
         #TODO: make the if staement encompass all of readMail()
     
-    print("FROM:", mail.from_addr)
-    print("TO:", mail.to)
-    print("TITLE:", mail.title)
-    print("BODY:", mail.body)
     
     if mail.title.upper() == "NEW":
         #make new game
@@ -90,8 +92,6 @@ def readMail():
             else:
                 fakeSendMail(playerEmail, gameId, "Invalid command. " + instructions())
             
-            
-            print(game.getAllCardsInPlay(gameId))
             
             nextPlayerTuple = game.nextPlayer(gameId)
             if game.checkForRoundCompletion(gameId):
