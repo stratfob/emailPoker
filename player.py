@@ -3,7 +3,7 @@ import db
 def addToPot(gameId, player, chips, action):
     _,_,_,_,_,pot,_,_ = db.getGame(gameId)
     playerTuple = db.getPlayer(gameId, player)
-    _,_,address,name,stack,_,_,_,_,amountPutInPot,_ = playerTuple
+    _,_,address,name,stack,_,_,_,_,amountPutInPot,_,amountPutInPotThisRound = playerTuple
     logStatement = ""
     chipsPutIn = chips
     
@@ -25,12 +25,28 @@ def addToPot(gameId, player, chips, action):
     
     #update player stack
     db.updatePlayer(gameId, player, "stack = " + str(stack - chipsPutIn) 
-        + ", amountPutInPot = " + str(amountPutInPot + chipsPutIn))
+        + ", amountPutInPot = " + str(amountPutInPot + chipsPutIn) + 
+        ", amountPutInPotThisRound = " + str(amountPutInPotThisRound + chipsPutIn))
     
     #update pot
     db.updateGame(gameId, "pot = " + str(pot + chipsPutIn))
     return logStatement
+
+def takeFromPot(gameId, player, chips):
+    _,_,_,_,_,pot,_,_ = db.getGame(gameId)
+    playerTuple = db.getPlayer(gameId, player)
+    _,_,address,name,stack,_,_,_,_,amountPutInPot,_,amountPutInPotThisRound = playerTuple
+    logStatement = ""
+   
+    logStatement = "Player " + name + " takes " + str(chips) + " chips from the pot."
+
+    # TODO: error handling - if pot doesn't have enough
+    #update player stack
+    db.updatePlayer(gameId, player, "stack = " + str(stack + chips))
     
+    #update pot
+    db.updateGame(gameId, "pot = " + str(pot - chips))
+    return logStatement
     
 
 def fold(player):
@@ -38,9 +54,9 @@ def fold(player):
 
 def call(gameId, playerTuple):
     _,_,_,_,_,pot,betToMatch,handLog = db.getGame(gameId)
-    _,playerId,address,name,stack,_,_,_,_,amountPutInPot,_ = playerTuple
+    _,playerId,address,name,stack,_,_,_,_,amountPutInPot,_,amountPutInPotThisRound = playerTuple
     
-    chipsToPutIn = betToMatch - amountPutInPot
+    chipsToPutIn = betToMatch - amountPutInPotThisRound
     
     logStatement = ""
     if chipsToPutIn == 0:

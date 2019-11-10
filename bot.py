@@ -4,6 +4,7 @@ import db
 import game
 import credentials
 import player
+import uuid
 
 login = credentials.log
 password = credentials.passw
@@ -21,7 +22,7 @@ def fakeSendMail(receivers, title, body):
     
 
 def playerInfoLog(gameId, playerId):
-    _,_,_,name,stack,cards,_,_,_,amountPutInPot,_ = db.getPlayer(gameId, playerId)
+    _,_,_,name,stack,cards,_,_,_,amountPutInPot,_,amountPutInPotThisRound = db.getPlayer(gameId, playerId)
     #TODO: return board and bet to match to player
     _,board,_,_,_,pot,betToMatch,handLog = db.getGame(gameId)
     string = "\r\n\r\nIt is your turn " + name + ".\r\nYour cards are: " + cards.split(":")[0] + " and " + cards.split(":")[1]
@@ -32,8 +33,8 @@ def playerInfoLog(gameId, playerId):
         string = string[:-2] # get rid of trailing comma
     string += "\r\nThe pot is " + str(pot) + " chips."
     string += "\r\nYour stack is " + str(stack) + " chips."
-    if not amountPutInPot == 0:
-        string += "You have already put in " + str(amountPutInPot) + " chips into the pot."
+    if not amountPutInPotThisRound == 0:
+        string += "You have already put in " + str(amountPutInPotThisRound) + " chips into the pot."
     return string
 
 def instructions():
@@ -44,13 +45,18 @@ def instructions():
     return string
     
 
-def readMail():
+def readMail(mailId, fakeMail):
     
-    imapper = easyimap.connect('imap.gmail.com', login, password)
-    #for mail_id in imapper.listids(limit=100):
-    mail_id = imapper.listids()[0]
-    mail = imapper.mail(mail_id)
+    # uncomment below three lines for real mail
+   # imapper = easyimap.connect('imap.gmail.com', login, password)
+   # mail_id = imapper.listids()[0]
+   # mail = imapper.mail(mail_id)
     
+   # This is the fake mail stuff
+    mail_id = mailId
+    mail = fakeMail
+   
+   
     # If new email
     if not db.isMailRead(mail_id):
         db.addReadMail(mail_id)
@@ -67,6 +73,7 @@ def readMail():
                      db.getGame(gameId)[7] + playerInfoLog(gameId,firstPlayer)
                      + instructions())
         
+        return gameId
     #look for game with id in title
     elif not len(db.getGame(mail.title[4:])) == 0:
         
@@ -92,27 +99,60 @@ def readMail():
             else:
                 fakeSendMail(playerEmail, gameId, "Invalid command. " + instructions())
             
-            
+
+    
             nextPlayerTuple = game.nextPlayer(gameId)
+            
+            
             if game.checkForRoundCompletion(gameId):
                 # Starts next round and returns active player
                 nextPlayerTuple = db.getPlayer(gameId, game.nextRound(gameId))
                 
+            if game.isHandOver(gameId):
+                game.showdown(gameId)
+                
+                # Send mail to all players
+                for i in range(db.numberOfPlayersInGame(gameId)):
+                    fakeSendMail(db.getPlayer(gameId, i)[2], gameId, 
+                                 db.getGame(gameId)[7])
+                
+                nextPlayerTuple = db.getPlayer(gameId, game.startHand(gameId))
+                
             db.updateGame(gameId, "currentPlayer = " + str(nextPlayerTuple[1]))
-               
+             
+            
+            print("------------------------------------------------------------")
             fakeSendMail(nextPlayerTuple[2], gameId, db.getGame(gameId)[7] +
                          playerInfoLog(gameId, nextPlayerTuple[1]) + instructions())
             
         else:
-            print(game.getAllCardsInPlay(gameId))
             pass # Not current player
             # TODO respond to incorrect player
             
-        
+class Mail:
+    def __init__(self, title, body, from_addr):
+        self.title = title
+        self.body = body 
+        self.from_addr = from_addr #100
+       
 
 def main():
-    db.init()    
-    readMail()
+    db.init()   
+    
+    gameId = readMail("test1", Mail("New", "ben.e.stratford@gmail.com:Ben1:100\r\nbenstratford586@gmail.com:Ben2:100", "<ben.e.stratford@gmail.com>"))
+    firstPlayer = db.getGame(gameId)[2]
+    
+    for i in range(4):
+        if firstPlayer == 0:
+            ID = str(uuid.uuid4()).replace('-','')
+            readMail(ID, Mail("Re: " + gameId, "Call", "<ben.e.stratford@gmail.com>"))
+            readMail(ID, Mail("Re: " + gameId, "Call", "<benstratford586@gmail.com>"))
+        else:
+            ID = str(uuid.uuid4()).replace('-','')
+            readMail(ID, Mail("Re: " + gameId, "Call", "<benstratford586@gmail.com>"))
+            readMail(ID, Mail("Re: " + gameId, "Call", "<ben.e.stratford@gmail.com>"))
+           
+
     db.closeConn()
     
     
