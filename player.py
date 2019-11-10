@@ -49,8 +49,13 @@ def takeFromPot(gameId, player, chips):
     return logStatement
     
 
-def fold(player):
-    pass
+def fold(gameId, playerTuple):
+    _,_,_,_,_,pot,betToMatch,handLog = db.getGame(gameId)
+    _,playerId,address,name,stack,_,_,_,_,amountPutInPot,_,amountPutInPotThisRound = playerTuple
+
+    db.updatePlayer(gameId, playerId, "folded = 1")
+    db.updateGame(gameId, "handLog = \"" + handLog + "\r\nPlayer " + name + " folds.\"")
+    
 
 def call(gameId, playerTuple):
     _,_,_,_,_,pot,betToMatch,handLog = db.getGame(gameId)

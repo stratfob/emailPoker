@@ -91,7 +91,7 @@ def readMail(mailId, fakeMail):
             elif mail.body.upper().startswith("RAISE"):
                 pass
             elif mail.body.upper().startswith("FOLD"):
-                pass
+                player.fold(gameId, playerTuple)
             elif mail.body.upper().startswith("ALL IN"):
                 pass
             elif mail.body.upper().startswith("CHECK"):
@@ -146,11 +146,11 @@ def main():
         if firstPlayer == 0:
             ID = str(uuid.uuid4()).replace('-','')
             readMail(ID, Mail("Re: " + gameId, "Call", "<ben.e.stratford@gmail.com>"))
-            readMail(ID, Mail("Re: " + gameId, "Call", "<benstratford586@gmail.com>"))
+            readMail(ID, Mail("Re: " + gameId, "Fold", "<benstratford586@gmail.com>"))
         else:
             ID = str(uuid.uuid4()).replace('-','')
             readMail(ID, Mail("Re: " + gameId, "Call", "<benstratford586@gmail.com>"))
-            readMail(ID, Mail("Re: " + gameId, "Call", "<ben.e.stratford@gmail.com>"))
+            readMail(ID, Mail("Re: " + gameId, "Fold", "<ben.e.stratford@gmail.com>"))
            
 
     db.closeConn()

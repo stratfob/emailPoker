@@ -217,7 +217,7 @@ def showdown(gameId):
         
     if len(isStillIn) == 1:
         handLog = db.getGame(gameId)[7]
-        logStatement = player.takeFromPot(gameId, isStillIn[0][0], isStillIn[0][1])
+        logStatement = player.takeFromPot(gameId, isStillIn[0][0], thisPot)
         db.updateGame(gameId, "handLog = \"" + handLog + "\r\n" + logStatement + "\"")
     #TODO: eliminate players
     
