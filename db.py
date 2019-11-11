@@ -84,8 +84,12 @@ def numberOfPlayersInGame(gameId):
     return int(rows[0][0])
 
 def getGame(gameId):
-    c.execute("SELECT * FROM game WHERE ID = ?", (gameId,))
-    return c.fetchall()[0]
+    try:
+        c.execute("SELECT * FROM game WHERE ID = ?", (gameId,))
+        return c.fetchall()[0]
+    except:
+        return []
+    
 
 def getPlayer(gameID, playerId):
     c.execute("SELECT * FROM player WHERE ID = ? AND gameID = ?", (playerId, gameID))
@@ -99,6 +103,15 @@ def getPlayerByEmail(gameId, playerEmail):
 def updateGame(ID, updatesString):
     try:
         c.execute("UPDATE game SET " + updatesString + " WHERE ID = ?", (ID,))
+        conn.commit()
+    except Exception as e:
+        return e
+    
+# Deletes
+def deleteGame(gameId):
+    try:
+        c.execute("DELETE FROM game WHERE ID = ?", (gameId,))
+        c.execute("DELETE FROM player WHERE gameID = ?", (gameId,))
         conn.commit()
     except Exception as e:
         return e

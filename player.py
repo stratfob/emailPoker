@@ -1,17 +1,17 @@
 import db
 
 def addToPot(gameId, player, chips, action):
-    _,_,_,_,_,pot,_,_ = db.getGame(gameId)
+    _,_,_,_,_,pot,betToMatch,_ = db.getGame(gameId)
     playerTuple = db.getPlayer(gameId, player)
     _,_,address,name,stack,_,_,_,_,amountPutInPot,_,amountPutInPotThisRound = playerTuple
     logStatement = ""
     chipsPutIn = chips
     
-    if stack < chips:
+    if stack <= chips:
         logStatement += "Player " + name + " is all in! "
         chipsPutIn = chips
         db.updatePlayer(gameId, player, "isAllIn = 1")
-    logStatement = "Player " + name + " "
+    logStatement += "Player " + name + " "
     if action == "sb": # small blind
         logStatement += "posted the small blind of " + str(chipsPutIn) + " chips."
     elif action == "bb": # big blind
@@ -19,7 +19,12 @@ def addToPot(gameId, player, chips, action):
     elif action == "call":
         logStatement += "calls " + str(chipsPutIn) + " chips."
     elif action == "raise":
-        logStatement += "raises to " + str(chipsPutIn) + " chips."
+        # check if amount put in actually makes it a raise (i.e. with all in less than btm)
+        if chipsPutIn > betToMatch:
+            db.updateGame(gameId, "betToMatch = " + str(amountPutInPotThisRound + chipsPutIn))
+            logStatement += "raises to " + str(amountPutInPotThisRound + chipsPutIn) + " chips."
+        # otherwise betToMatch is not increased and no raise has been made
+            
     elif action == "check":
         logStatement += "checks."
     
@@ -75,5 +80,40 @@ def call(gameId, playerTuple):
     db.updateGame(gameId, "handLog = \"" + logStatement + "\"")
     
 
-def raiseTo(player, chips):
-    pass
+def raiseTo(gameId, playerTuple, raiseToChips):
+    print(raiseToChips)
+    _,_,_,_,_,pot,betToMatch,handLog = db.getGame(gameId)
+    _,playerId,address,name,stack,_,_,_,_,amountPutInPot,_,amountPutInPotThisRound = playerTuple
+    
+    if betToMatch > raiseToChips:
+        return False
+    elif betToMatch == raiseToChips:
+        call(gameId, playerTuple)
+        return True
+    # TODO: check for valid raise, i.e. correct betting increment
+    else:
+        
+        chipsToPutIn = raiseToChips - amountPutInPotThisRound
+        
+        logStatement = handLog + "\r\n" + addToPot(gameId, playerId, chipsToPutIn, "raise")
+        
+        
+        
+        numberOfPlayers = db.numberOfPlayersInGame(gameId)
+        for i in range(numberOfPlayers):
+            _,_,_,_,_,_,isAllIn,folded,eliminated,_,isChecked,_ = db.getPlayer(gameId, i)
+            if not bool(folded) and not bool(eliminated) and not bool(isAllIn):
+                db.updatePlayer(gameId, i, "isChecked = 0")
+                
+        # Raiser is checked
+        db.updatePlayer(gameId, playerId, "isChecked = 1")
+        
+        db.updateGame(gameId, "handLog = \"" + logStatement + "\"")
+        return True
+
+def allIn(gameId, playerTuple):
+    _,_,_,_,_,pot,betToMatch,handLog = db.getGame(gameId)
+    _,playerId,address,name,stack,_,_,_,_,amountPutInPot,_,amountPutInPotThisRound = playerTuple
+    
+    return raiseTo(gameId, playerTuple, stack+amountPutInPotThisRound)
+

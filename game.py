@@ -6,7 +6,8 @@ from treys import Card, Evaluator
 
 def newGame(mailBody):    
     
-    #TODO make sure there are no duplicate email addresses
+    #TODO: make sure there are no duplicate email addresses
+    #TODO: limit number of players to 10
     gameId = db.addGame();
 
     playerIndex = 0
@@ -31,21 +32,25 @@ def startHand(gameId):
     numberOfPlayers = db.numberOfPlayersInGame(gameId)
     _,_,_,dealer,_,_,_,_ = db.getGame(gameId)
     
+    #TODO: make blinds configurable
     smallBlind = 1
     bigBlind = 2
     
-    
-    #TODO: Account for eliminations (use getNextStartingPlayers)
-    #dealer moves to left
-    dealerPos = (dealer + 1) % numberOfPlayers
-    smallBlindPos = (dealerPos + 1) % numberOfPlayers
-    bigBlindPos = (dealerPos + 2) % numberOfPlayers
-    UTG = (dealerPos + 3) % numberOfPlayers
-    
+    deck = pd.Deck()
+    deck.shuffle()
+    # Deal cards and set playes to not be folded
     for i in range(numberOfPlayers):
-        db.updatePlayer(gameId, i, "amountPutInPot = 0, amountPutInPotThisRound = 0")
+        _,_,_,_,_,_,_,_,eliminated,_,_,_ = db.getPlayer(gameId, i)
+        
+        if eliminated == 0: # not eliminated
+            hand = deck.deal(2)
+            db.updatePlayer(gameId, i, "folded = 0, isChecked = 0, cards = \"" 
+                            + str(hand[0]) + ":" + str(hand[1]) + "\", amountPutInPot = 0, amountPutInPotThisRound = 0")
     
+    #dealer moves to left
+    dealerPos, smallBlindPos, bigBlindPos, UTG = getNextStartingPlayers(gameId)
     
+    # TODO: only show new hand at start of hand, not every email
     handLog = "New Hand\r\n--------------------------------------\r\n" 
     handLog += "Dealer: " + db.getPlayer(gameId, dealerPos)[3] + "\r\n"
     
@@ -59,21 +64,10 @@ def startHand(gameId):
 
     db.updateGame(gameId, "handLog = \"" + handLog + "\"")
   
-    deck = pd.Deck()
-    deck.shuffle()
-    # Deal cards and set playes to not be folded
-    for i in range(numberOfPlayers):
-        _,_,_,_,_,_,_,_,eliminated,_,_,_ = db.getPlayer(gameId, i)
-        
-        if eliminated == 0: # not eliminated
-            hand = deck.deal(2)
-            db.updatePlayer(gameId, i, "folded = 0, isChecked = 0, cards = \"" 
-                            + str(hand[0]) + ":" + str(hand[1]) + "\"")
+    
             
     return UTG
 
-def endHand(gameId):
-    pass
 
 def isHandOver(gameId):
     _,_,currentPlayer,dealer,phase,pot,betToMatch,handLog = db.getGame(gameId)
@@ -166,6 +160,20 @@ def getWinners(gameId, players):
     
     return winners
 
+def isGameOver(gameId):
+    _,_,currentPlayer,dealer,_,pot,betToMatch,handLog = db.getGame(gameId)
+    numberOfPlayers = db.numberOfPlayersInGame(gameId)
+    
+    numbernotElim = 0
+    for i in range(numberOfPlayers):
+        _,_,_,_,_,_,isAllIn,folded,eliminated,_,isChecked,_ = db.getPlayer(gameId, i)
+        if not bool(eliminated):
+            numbernotElim += 1
+            if numbernotElim > 1:
+                return False
+    
+    return True
+
 def showdown(gameId):
     _,_,currentPlayer,dealer,_,pot,betToMatch,handLog = db.getGame(gameId)
     numberOfPlayers = db.numberOfPlayersInGame(gameId)
@@ -219,7 +227,12 @@ def showdown(gameId):
         handLog = db.getGame(gameId)[7]
         logStatement = player.takeFromPot(gameId, isStillIn[0][0], thisPot)
         db.updateGame(gameId, "handLog = \"" + handLog + "\r\n" + logStatement + "\"")
-    #TODO: eliminate players
+    
+    for i in range(numberOfPlayers):
+        _,_,_,_,stack,cards,isAllIn,folded,eliminated,amountPutInPot,isChecked,_ = db.getPlayer(gameId, i)
+        if stack <= 0:
+            db.updatePlayer(gameId, i, "eliminated = 1")
+        db.updatePlayer(gameId, i, "isAllIn = 0")
     
 # Returns active player
 def nextRound(gameId):
@@ -231,6 +244,17 @@ def nextRound(gameId):
 
     newPhase = phase + 1
     numberOfPlayers = db.numberOfPlayersInGame(gameId)
+    db.updateGame(gameId, "currentPlayer = " + str(dealer))
+    
+    # TODO: skip first player if All in
+    #TODO: Fix to use below. 
+    ########################################
+    if nextPlayer(gameId) != -1:
+        newCurrentPlayer = nextPlayer(gameId)[1]
+    else:
+        newCurrentPlayer = -1
+    ########################################
+    
     newCurrentPlayer = (dealer + 1) % numberOfPlayers
     
     db.updateGame(gameId, "phase = " + str(newPhase) + ", currentPlayer = " + str(newCurrentPlayer))
@@ -277,8 +301,19 @@ def nextPlayer(gameId):
     
 # Returns tuple of next dealer, sb, bb, and UTG
 def getNextStartingPlayers(gameId):
-    pass
+    _,_,_,dealer,_,_,_,_ = db.getGame(gameId)
     
+    db.updateGame(gameId, "currentPlayer = " + str(dealer))
+    # Dealer moves to left
+    dealerPos = nextPlayer(gameId)[1]
+    db.updateGame(gameId, "currentPlayer = " + str(dealerPos))
+    smallBlindPos = nextPlayer(gameId)[1]
+    db.updateGame(gameId, "currentPlayer = " + str(smallBlindPos))
+    bigBlindPos = nextPlayer(gameId)[1]
+    db.updateGame(gameId, "currentPlayer = " + str(bigBlindPos))
+    UTG = nextPlayer(gameId)[1]
+    db.updateGame(gameId, "currentPlayer = " + str(UTG))
+    return (dealerPos, smallBlindPos, bigBlindPos, UTG)
     
     
     
