@@ -21,10 +21,11 @@ def newGame(mailBody):
     return gameId
 
 def startGame(gameId):
-    #numberOfPlayers = db.numberOfPlayersInGame(gameId)
-    #dealer = random.randint(0, numberOfPlayers - 1)
-    #TODO: Change this!!!!
-    dealer = 0
+    numberOfPlayers = db.numberOfPlayersInGame(gameId)
+    dealer = random.randint(0, numberOfPlayers - 1)
+
+    # for debugging, remove randomness
+    #dealer = 0
     
     db.updateGame(gameId, "currentPlayer = " + str(dealer) + ", dealer = " + str(dealer))
     return startHand(gameId)
