@@ -21,8 +21,10 @@ def newGame(mailBody):
     return gameId
 
 def startGame(gameId):
-    numberOfPlayers = db.numberOfPlayersInGame(gameId)
-    dealer = random.randint(0, numberOfPlayers - 1)
+    #numberOfPlayers = db.numberOfPlayersInGame(gameId)
+    #dealer = random.randint(0, numberOfPlayers - 1)
+    #TODO: Change this!!!!
+    dealer = 0
     
     db.updateGame(gameId, "currentPlayer = " + str(dealer) + ", dealer = " + str(dealer))
     return startHand(gameId)
@@ -233,6 +235,17 @@ def showdown(gameId):
         if stack <= 0:
             db.updatePlayer(gameId, i, "eliminated = 1")
         db.updatePlayer(gameId, i, "isAllIn = 0")
+        
+def allAreAllIn(gameId):
+    _,_,currentPlayer,dealer,_,pot,betToMatch,handLog = db.getGame(gameId)
+    numberOfPlayers = db.numberOfPlayersInGame(gameId)
+    
+    for i in range(numberOfPlayers):
+        _,_,_,_,_,_,isAllIn,folded,eliminated,_,isChecked,_ = db.getPlayer(gameId, i)
+        if not bool(eliminated) and not bool(folded) and not bool(isAllIn):
+            return False
+    
+    return True
     
 # Returns active player
 def nextRound(gameId):
@@ -246,21 +259,19 @@ def nextRound(gameId):
     numberOfPlayers = db.numberOfPlayersInGame(gameId)
     db.updateGame(gameId, "currentPlayer = " + str(dealer))
     
-    # TODO: skip first player if All in
-    #TODO: Fix to use below. 
-    ########################################
-    if nextPlayer(gameId) != -1:
-        newCurrentPlayer = nextPlayer(gameId)[1]
-    else:
-        newCurrentPlayer = -1
-    ########################################
-    
-    newCurrentPlayer = (dealer + 1) % numberOfPlayers
-    
-    db.updateGame(gameId, "phase = " + str(newPhase) + ", currentPlayer = " + str(newCurrentPlayer))
     for i in range(numberOfPlayers):
         db.updatePlayer(gameId, i, "isChecked = 0, amountPutInPotThisRound = 0")
         
+    db.updateGame(gameId, "phase = " + str(newPhase))
+    
+    if not allAreAllIn(gameId):
+        newCurrentPlayer = nextPlayer(gameId)[1]
+        db.updateGame(gameId, "currentPlayer = " + str(newCurrentPlayer))
+        
+    else:
+        newCurrentPlayer = dealer
+        db.updateGame(gameId, "currentPlayer = " + str(newCurrentPlayer))
+            
     deck = pd.Deck()
     deck.get_list(getAllCardsInPlay(gameId)) # remove all cards currently in play
     deck.shuffle()
@@ -283,6 +294,8 @@ def nextRound(gameId):
         
     
     return newCurrentPlayer
+    
+        
             
 
 

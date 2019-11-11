@@ -81,7 +81,6 @@ def call(gameId, playerTuple):
     
 
 def raiseTo(gameId, playerTuple, raiseToChips):
-    print(raiseToChips)
     _,_,_,_,_,pot,betToMatch,handLog = db.getGame(gameId)
     _,playerId,address,name,stack,_,_,_,_,amountPutInPot,_,amountPutInPotThisRound = playerTuple
     

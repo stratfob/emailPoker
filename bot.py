@@ -91,11 +91,14 @@ def readMail(mailId, fakeMail):
                 if mail.body.upper().startswith("CALL"):
                     player.call(gameId, playerTuple)           
                 elif mail.body.upper().startswith("RAISE"):
-                    if mail.body.split(" ")[1].strip().find('\\') == -1:
-                        chipsToRaiseTo = int(mail.body.split(" ")[1].strip())
-                    else: 
-                        chipsToRaiseTo = int(mail.body.split(" ")[1].strip()[:mail.body.split(" ")[1].strip().find('\\')])
-                    successfulRaise = player.raiseTo(gameId, playerTuple, chipsToRaiseTo)
+                    if len(mail.body.split(" "))<2:
+                        successfulRaise = False
+                    else:
+                        if mail.body.split(" ")[1].strip().find('\\') == -1:
+                            chipsToRaiseTo = int(mail.body.split(" ")[1].strip())
+                        else: 
+                            chipsToRaiseTo = int(mail.body.split(" ")[1].strip()[:mail.body.split(" ")[1].strip().find('\\')])
+                        successfulRaise = player.raiseTo(gameId, playerTuple, chipsToRaiseTo)
                                                     
                 elif mail.body.upper().startswith("FOLD"):
                     player.fold(gameId, playerTuple)
@@ -106,13 +109,12 @@ def readMail(mailId, fakeMail):
                 
                 if successfulRaise:
         
-                    nextPlayerTuple = game.nextPlayer(gameId)
-                    
+                    if not game.allAreAllIn(gameId):
+                        nextPlayerTuple = game.nextPlayer(gameId)
                     
                     if game.checkForRoundCompletion(gameId):
                         # Starts next round and returns active player
                         nextPlayerTuple = db.getPlayer(gameId, game.nextRound(gameId))
-    
                         
                     if game.isHandOver(gameId):
                         game.showdown(gameId)
@@ -126,12 +128,17 @@ def readMail(mailId, fakeMail):
                             nextPlayerTuple = db.getPlayer(gameId, game.startHand(gameId))
                         
                     if not game.isGameOver(gameId):
-                        
+                        if not game.allAreAllIn(gameId):
                             db.updateGame(gameId, "currentPlayer = " + str(nextPlayerTuple[1]))
-                             
-                            
                             fakeSendMail(nextPlayerTuple[2], gameId, db.getGame(gameId)[7] +
                                          playerInfoLog(gameId, nextPlayerTuple[1]) + instructions())
+                        else:
+                            _,_,currentPlayer,dealer,_,pot,betToMatch,handLog = db.getGame(gameId)
+                            numberOfPlayers = db.numberOfPlayersInGame(gameId)
+                            for i in range(numberOfPlayers):
+                                if not bool(db.getPlayer(gameId, i)[8]): # not eliminated
+                                    fakeSendMail(db.getPlayer(gameId, i)[2], gameId, db.getGame(gameId)[7] +
+                                         "\r\nDealer, please call to continue.")
                             
                     else:
                         _,_,currentPlayer,dealer,_,pot,betToMatch,handLog = db.getGame(gameId)
@@ -154,14 +161,12 @@ def readMail(mailId, fakeMail):
                 else:
                     fakeSendMail(playerEmail, gameId, "Raise entered was not enough. Please try again.\r\n"+ instructions())
                 
-            else:
-                pass # Not current player
             
 class Mail:
     def __init__(self, title, body, from_addr):
         self.title = title
         self.body = body 
-        self.from_addr = from_addr #100
+        self.from_addr = from_addr
        
 
 def main():
@@ -171,21 +176,14 @@ def main():
     #while True:
      #   readMail()
     gameId = readMail(str(uuid.uuid4()).replace('-',''), Mail("New", "dmulcah@tcd.ie:Declan:100\r\nbenstratford586@gmail.com:Ben2:100", "<ben.e.stratford@gmail.com>"))
-    firstPlayer = db.getGame(gameId)[2]
+    readMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "call", "<dmulcah@tcd.ie>"))
+    readMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "raise", "<benstratford586@gmail.com>"))
+    readMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "raise 10", "<benstratford586@gmail.com>"))
+    readMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "call", "<dmulcah@tcd.ie>"))
+
     
-    #if firstPlayer == 0:
-        #readMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Fold", "<dmulcah@tcd.ie>"))
-    #else:
-        #readMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Fold", "<benstratford586@gmail.com>"))
     
-    for i in range(8):
-        if firstPlayer == 0:
-           readMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<dmulcah@tcd.ie>"))
-           readMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Raise 10", "<benstratford586@gmail.com>"))
-        else:
-           readMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<benstratford586@gmail.com>"))
-           readMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Raise 10", "<dmulcah@tcd.ie>"))
-           
+
 
     db.closeConn()
     

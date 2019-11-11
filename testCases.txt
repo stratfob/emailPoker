@@ -1,0 +1,26 @@
+    gameId = readMail(str(uuid.uuid4()).replace('-',''), Mail("New", "dmulcah@tcd.ie:Declan:100\r\nbenstratford586@gmail.com:Ben2:100", "<ben.e.stratford@gmail.com>"))
+    readMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<dmulcah@tcd.ie>"))
+    readMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<benstratford586@gmail.com>"))
+    readMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<dmulcah@tcd.ie>"))
+    readMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<benstratford586@gmail.com>"))
+    readMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<dmulcah@tcd.ie>"))
+    readMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<benstratford586@gmail.com>"))
+    readMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<dmulcah@tcd.ie>"))
+    readMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<benstratford586@gmail.com>"))
+    
+    
+    gameId = readMail(str(uuid.uuid4()).replace('-',''), Mail("New", "dmulcah@tcd.ie:Declan:100\r\nbenstratford586@gmail.com:Ben2:100", "<ben.e.stratford@gmail.com>"))
+    readMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "All in", "<dmulcah@tcd.ie>"))
+    readMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<benstratford586@gmail.com>"))
+    readMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<benstratford586@gmail.com>"))
+    readMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<benstratford586@gmail.com>"))
+    readMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<benstratford586@gmail.com>"))
+    
+    gameId = readMail(str(uuid.uuid4()).replace('-',''), Mail("New", "dmulcah@tcd.ie:Declan:100\r\nbenstratford586@gmail.com:Ben2:100", "<ben.e.stratford@gmail.com>"))
+    readMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "fold", "<dmulcah@tcd.ie>"))
+
+    gameId = readMail(str(uuid.uuid4()).replace('-',''), Mail("New", "dmulcah@tcd.ie:Declan:100\r\nbenstratford586@gmail.com:Ben2:100", "<ben.e.stratford@gmail.com>"))
+    readMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "call", "<dmulcah@tcd.ie>"))
+    readMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "raise", "<benstratford586@gmail.com>"))
+    readMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "raise 10", "<benstratford586@gmail.com>"))
+    readMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "call", "<dmulcah@tcd.ie>"))
