@@ -9,7 +9,7 @@ def addToPot(gameId, player, chips, action):
     
     if stack <= chips:
         logStatement += "Player " + name + " is all in! "
-        chipsPutIn = chips
+        chipsPutIn = stack
         db.updatePlayer(gameId, player, "isAllIn = 1")
     logStatement += "Player " + name + " "
     if action == "sb": # small blind

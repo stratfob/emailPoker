@@ -13,19 +13,20 @@ def newGame(mailBody):
     playerIndex = 0
     for newPlayer in mailBody.split("\r\n"):
         if newPlayer != '':
+            # TODO: test below
             playerParts = newPlayer.split(":")
-            db.addPlayer(gameId, playerIndex, playerParts[0], 
-                         playerParts[1], playerParts[2])
+            db.addPlayer(gameId, playerIndex, playerParts[0].lower(), 
+                playerParts[1], playerParts[2])
             playerIndex += 1
             
     return gameId
 
 def startGame(gameId):
-    numberOfPlayers = db.numberOfPlayersInGame(gameId)
-    dealer = random.randint(0, numberOfPlayers - 1)
+    #numberOfPlayers = db.numberOfPlayersInGame(gameId)
+    #dealer = random.randint(0, numberOfPlayers - 1)
 
     # for debugging, remove randomness
-    #dealer = 0
+    dealer = 0
     
     db.updateGame(gameId, "currentPlayer = " + str(dealer) + ", dealer = " + str(dealer))
     return startHand(gameId)
@@ -199,6 +200,7 @@ def showdown(gameId):
        
     thisPot = pot
     
+    
     while len(isStillIn) > 1:
         minimumAIP = min(i[1] for i in isStillIn)
         thisPot = minimumAIP * len(isStillIn)
@@ -228,7 +230,7 @@ def showdown(gameId):
         
     if len(isStillIn) == 1:
         handLog = db.getGame(gameId)[7]
-        logStatement = player.takeFromPot(gameId, isStillIn[0][0], thisPot)
+        logStatement = player.takeFromPot(gameId, isStillIn[0][0], isStillIn[0][1])
         db.updateGame(gameId, "handLog = \"" + handLog + "\r\n" + logStatement + "\"")
     
     for i in range(numberOfPlayers):
