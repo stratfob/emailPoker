@@ -225,12 +225,13 @@ def showdown(gameId):
                 newIsStillIn.append(i)
                 
         isStillIn = newIsStillIn
+        pot -= thisPot
         thisPot = 0
         
         
     if len(isStillIn) == 1:
         handLog = db.getGame(gameId)[7]
-        logStatement = player.takeFromPot(gameId, isStillIn[0][0], isStillIn[0][1])
+        logStatement = player.takeFromPot(gameId, isStillIn[0][0], isStillIn[0][1] + (pot-isStillIn[0][1]))
         db.updateGame(gameId, "handLog = \"" + handLog + "\r\n" + logStatement + "\"")
     
     for i in range(numberOfPlayers):
@@ -242,6 +243,9 @@ def showdown(gameId):
 def allAreAllIn(gameId):
     _,_,currentPlayer,dealer,_,pot,betToMatch,handLog = db.getGame(gameId)
     numberOfPlayers = db.numberOfPlayersInGame(gameId)
+    
+    if nextPlayer(gameId) == -1:
+        return True
     
     for i in range(numberOfPlayers):
         _,_,_,_,_,_,isAllIn,folded,eliminated,_,isChecked,_ = db.getPlayer(gameId, i)

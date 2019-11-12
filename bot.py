@@ -293,16 +293,15 @@ def main():
     #imapper = easyimap.connect('imap.gmail.com', login, password)
     #while True:
     #    readMail(imapper)
-    gameId = fakeReadMail(str(uuid.uuid4()).replace('-',''), Mail("New", "ben.e.stratford@gmail.com:Ben1:90\r\nbenstratford586@gmail.com:Ben2:100", "<ben.e.stratford@gmail.com>"))
-    fakeReadMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "All in", "<ben.e.stratford@gmail.com>"))
+    gameId = fakeReadMail(str(uuid.uuid4()).replace('-',''), Mail("New", "ben.e.stratford@gmail.com:Ben1:100\r\nbenstratford586@gmail.com:Ben2:100", "<ben.e.stratford@gmail.com>"))
+    fakeReadMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben.e.stratford@gmail.com>"))
     fakeReadMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<benstratford586@gmail.com>"))
-    fakeReadMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "call", "<benstratford586@gmail.com>"))
+    fakeReadMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben.e.stratford@gmail.com>"))
     fakeReadMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<benstratford586@gmail.com>"))
-    fakeReadMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "call", "<benstratford586@gmail.com>"))
+    fakeReadMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben.e.stratford@gmail.com>"))
     fakeReadMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<benstratford586@gmail.com>"))
-    fakeReadMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "call", "<benstratford586@gmail.com>"))
+    fakeReadMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben.e.stratford@gmail.com>"))
     fakeReadMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<benstratford586@gmail.com>"))
-
     
 
   
