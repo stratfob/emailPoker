@@ -13,7 +13,6 @@ def newGame(mailBody):
     playerIndex = 0
     for newPlayer in mailBody.split("\r\n"):
         if newPlayer != '':
-            # TODO: test below
             playerParts = newPlayer.split(":")
             db.addPlayer(gameId, playerIndex, playerParts[0].lower(), 
                 playerParts[1], playerParts[2])
@@ -37,6 +36,7 @@ def startHand(gameId):
     _,_,_,dealer,_,_,_,_ = db.getGame(gameId)
     
     #TODO: make blinds configurable
+    # TODO: make blinds increase
     smallBlind = 1
     bigBlind = 2
     
@@ -54,8 +54,8 @@ def startHand(gameId):
     #dealer moves to left
     dealerPos, smallBlindPos, bigBlindPos, UTG = getNextStartingPlayers(gameId)
     
-    # TODO: only show new hand at start of hand, not every email
-    handLog = "New Hand\r\n--------------------------------------\r\n" 
+    # TODO: show hand number
+    handLog = "<b>Current Hand</b>\r\n--------------------------------------\r\n" 
     handLog += "Dealer: " + db.getPlayer(gameId, dealerPos)[3] + "\r\n"
     
     #UpdateGame
@@ -139,6 +139,32 @@ def pyDealerCardToDeucesCard(cardString):
         
     return Card.new(newCard)
 
+def cardToUnicode(cardString):
+    newCard = ""
+    if cardString.startswith("Ace"):
+        newCard += "A"
+    elif cardString.startswith("King"):
+        newCard += "K"
+    elif cardString.startswith("Queen"):
+        newCard += "Q"
+    elif cardString.startswith("Jack"):
+        newCard += "J"
+    elif cardString.startswith("10"):
+        newCard += "T"
+    else: # numerical value under 10
+        newCard += cardString[0]
+        
+    if cardString.endswith("Clubs"):
+        newCard += "♣"
+    elif cardString.endswith("Spades"):
+        newCard += "♠"
+    elif cardString.endswith("Hearts"):
+        newCard += "<font color='red'>♥</font>"
+    elif cardString.endswith("Diamonds"):
+        newCard += "<font color='red'>♦</font>"
+        
+    return newCard
+
 
 def getWinners(gameId, players):
     evaluator = Evaluator()
@@ -213,7 +239,7 @@ def showdown(gameId):
             handLog = db.getGame(gameId)[7]
             playerTuple = db.getPlayer(gameId, i[0])
             
-            logStatement = playerTuple[3] + " shows " + playerTuple[5].split(":")[0] + ", " +  playerTuple[5].split(":")[1]
+            logStatement = playerTuple[3] + " shows " + cardToUnicode(playerTuple[5].split(":")[0]) + ", " +  cardToUnicode(playerTuple[5].split(":")[1])
             logStatement += " (" + i[1] + ")"
             logStatement += "\r\n" + player.takeFromPot(gameId, i[0], thisPot//len(winners))
             db.updateGame(gameId, "handLog = \"" + handLog + "\r\n" + logStatement + "\"")

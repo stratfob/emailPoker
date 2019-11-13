@@ -24,11 +24,11 @@ def fakeSendMail(receivers, title, body):
 def playerInfoLog(gameId, playerId):
     _,_,_,name,stack,cards,_,_,_,amountPutInPot,_,amountPutInPotThisRound = db.getPlayer(gameId, playerId)
     _,board,_,_,_,pot,betToMatch,handLog = db.getGame(gameId)
-    string = "\r\n\r\nIt is your turn " + name + ".\r\nYour cards are: " + cards.split(":")[0] + " and " + cards.split(":")[1]
+    string = "\r\n\r\nIt is your turn " + name + ".\r\nYour cards are: " + game.cardToUnicode(cards.split(":")[0]) + " and " + game.cardToUnicode(cards.split(":")[1])
     if board != "":
         string += "\r\nThe board is : "
         for card in board.split(":"):
-            string += str(card) + ", "
+            string += game.cardToUnicode(str(card)) + ", "
         string = string[:-2] # get rid of trailing comma
     string += "\r\nThe pot is " + str(pot) + " chips."
     string += "\r\nYour stack is " + str(stack) + " chips."
@@ -45,24 +45,13 @@ def instructions():
     string += "\r\nFold" + "\r\nAll in"
     return string
     
-def readMail(imapper):
-#def readMail(mailId, fakeMail):
-    
-    #uncomment below three lines for real mail
-   
+def readMail(imapper):   
     mail_id = imapper.listids()[0]
     mail = imapper.mail(mail_id)
     
-   # This is the fake mail stuff
-    #mail_id = mailId
-    #mail = fakeMail
-   
-   
     # If new email
     if not db.isMailRead(mail_id):
         db.addReadMail(mail_id)
-        #TODO: make the if statement encompass all of readMail()
-    
     
         if mail.title.upper() == "NEW":
             #make new game
@@ -107,7 +96,7 @@ def readMail(imapper):
                 elif mail.body.upper().startswith("ALL IN"):
                     successfulRaise = player.allIn(gameId, playerTuple)
                 else:
-                    sendMail(playerEmail, gameId, "Invalid command. " + instructions())
+                    successfulRaise = False
                 
                 if successfulRaise:
         
@@ -161,17 +150,11 @@ def readMail(imapper):
                     
                 # unsuccessful raise    
                 else:
-                    sendMail(playerEmail, gameId, "Raise entered was not enough. Please try again.\r\n"+ instructions())
+                    sendMail(playerEmail, gameId, "Invalid input. Please try again.\r\n"+ instructions())
                 
 
 def fakeReadMail(mailId, fakeMail):
     
-    #uncomment below three lines for real mail
-   
-    #mail_id = imapper.listids()[0]
-   # mail = imapper.mail(mail_id)
-    
-   # This is the fake mail stuff
     mail_id = mailId
     mail = fakeMail
    
@@ -179,7 +162,6 @@ def fakeReadMail(mailId, fakeMail):
     # If new email
     if not db.isMailRead(mail_id):
         db.addReadMail(mail_id)
-        #TODO: make the if statement encompass all of readMail()
     
     
         if mail.title.upper() == "NEW":
@@ -225,7 +207,7 @@ def fakeReadMail(mailId, fakeMail):
                 elif mail.body.upper().startswith("ALL IN"):
                     successfulRaise = player.allIn(gameId, playerTuple)
                 else:
-                    fakeSendMail(playerEmail, gameId, "Invalid command. " + instructions())
+                    successfulRaise = False
                 
                 if successfulRaise:
         
@@ -277,9 +259,9 @@ def fakeReadMail(mailId, fakeMail):
                             
                         db.deleteGame(gameId)
                     
-                # unsuccessful raise    
+                # unsuccessful raise / invalid input
                 else:
-                    fakeSendMail(playerEmail, gameId, "Raise entered was not enough. Please try again.\r\n"+ instructions())
+                    fakeSendMail(playerEmail, gameId, "Invalid input. Please try again.\r\n"+ instructions())
                           
 class Mail:
     def __init__(self, title, body, from_addr):
@@ -290,20 +272,10 @@ class Mail:
 
 def main():
     db.init()   
-    #imapper = easyimap.connect('imap.gmail.com', login, password)
-    #while True:
-    #    readMail(imapper)
-    gameId = fakeReadMail(str(uuid.uuid4()).replace('-',''), Mail("New", "ben.e.stratford@gmail.com:Ben1:100\r\nbenstratford586@gmail.com:Ben2:100", "<ben.e.stratford@gmail.com>"))
-    fakeReadMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben.e.stratford@gmail.com>"))
-    fakeReadMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<benstratford586@gmail.com>"))
-    fakeReadMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben.e.stratford@gmail.com>"))
-    fakeReadMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<benstratford586@gmail.com>"))
-    fakeReadMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben.e.stratford@gmail.com>"))
-    fakeReadMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<benstratford586@gmail.com>"))
-    fakeReadMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben.e.stratford@gmail.com>"))
-    fakeReadMail(str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<benstratford586@gmail.com>"))
-    
-
+    imapper = easyimap.connect('imap.gmail.com', login, password)
+    while True:
+        readMail(imapper)
+   
   
     db.closeConn()
     
