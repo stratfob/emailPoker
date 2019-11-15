@@ -10,7 +10,8 @@ def createGameTable():
     try:
         c.execute('''CREATE TABLE game
               (ID integer, board text, currentPlayer integer, dealer integer,
-              phase integer, pot integer, betToMatch integer, handLog text)''')
+              phase integer, pot integer, betToMatch integer, handLog text,
+              handNo integer, smallBlind integer, blindIncrement integer)''')
         conn.commit()
         return "Created game table successfully"
     except:
@@ -57,8 +58,9 @@ def addGame():
         rows = c.fetchall()
         if len(rows)==0:
             c.execute("""INSERT INTO game(ID, board, currentPlayer, 
-                                          dealer, phase, pot, betToMatch, handLog)
-                  VALUES(?,?,?,?,?,?,?,?)""", (ID, "", 0, 0, 0, 0, 0,""))
+                                          dealer, phase, pot, betToMatch, 
+                                          handLog, handNo, smallBlind, blindIncrement)
+                  VALUES(?,?,?,?,?,?,?,?,?,?,?)""", (ID, "", 0, 0, 0, 0, 0,"",0, 0, 0))
             conn.commit()
             unique = True
             return ID

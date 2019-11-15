@@ -7,14 +7,18 @@ from treys import Card, Evaluator
 
 def newGame(mailBody):    
     
-    #TODO: make sure there are no duplicate email addresses
-    #TODO: limit number of players to 10
     gameId = db.addGame();
 
     playerIndex = 0
-    for newPlayer in mailBody.split("\r\n"):
-        if newPlayer != '':
-            playerParts = newPlayer.split(":")
+    firstLine = mailBody.split("\r\n")[0]
+    smallBlind = firstLine.split(":")[0]
+    blindIncrement = firstLine.split(":")[1]
+    
+    db.updateGame(gameId, "blindIncrement = " + str(blindIncrement) + ", smallBlind = " + str(smallBlind))
+    
+    for line in mailBody.split("\r\n")[1:]:
+        if line != '':
+            playerParts = line.split(":")
             db.addPlayer(gameId, playerIndex, playerParts[0].lower(), 
                 playerParts[1], playerParts[2])
             playerIndex += 1
@@ -35,12 +39,18 @@ def startGame(gameId):
     
 def startHand(gameId):
     numberOfPlayers = db.numberOfPlayersInGame(gameId)
-    _,_,_,dealer,_,_,_,_ = db.getGame(gameId)
+    _,_,_,dealer,_,_,_,_,handNo,smallBlind,blindIncrement = db.getGame(gameId)
+    blindsIncreased = False
+    if blindIncrement != 0:
+        if (handNo + 1) % blindIncrement == 0:
+            smallBlind *= 2
+            blindsIncreased = True
     
-    #TODO: make blinds configurable
-    # TODO: make blinds increase
-    smallBlind = 1
-    bigBlind = 2
+    handNo += 1
+    db.updateGame(gameId, "handNo = " + str(handNo) + ", smallBlind = " + str(smallBlind))
+    
+    smallBlind = smallBlind
+    bigBlind = smallBlind * 2
     
     deck = pd.Deck()
     deck.shuffle()
@@ -56,8 +66,9 @@ def startHand(gameId):
     #dealer moves to left
     dealerPos, smallBlindPos, bigBlindPos, UTG = getNextStartingPlayers(gameId)
     
-    # TODO: show hand number
-    handLog = "<b>Current Hand</b>\r\n--------------------------------------\r\n" 
+    handLog = "<b>Hand number " + str(handNo) + "</b>\r\n--------------------------------------\r\n" 
+    if blindsIncreased:
+        handLog += "Blinds have increased to " + str(smallBlind) + " and " + str(bigBlind) + " chips.\r\n"
     handLog += "Dealer: " + db.getPlayer(gameId, dealerPos)[3] + "\r\n"
     
     #UpdateGame
@@ -76,7 +87,7 @@ def startHand(gameId):
 
 
 def isHandOver(gameId):
-    _,_,currentPlayer,dealer,phase,pot,betToMatch,handLog = db.getGame(gameId)
+    _,_,currentPlayer,dealer,phase,pot,betToMatch,handLog,_,_,_ = db.getGame(gameId)
     numberOfPlayers = db.numberOfPlayersInGame(gameId)
     
     if phase == 4:
@@ -93,7 +104,7 @@ def isHandOver(gameId):
     return True
 
 def checkForRoundCompletion(gameId):
-    _,_,currentPlayer,dealer,_,pot,betToMatch,handLog = db.getGame(gameId)
+    _,_,currentPlayer,dealer,_,pot,betToMatch,handLog,_,_,_ = db.getGame(gameId)
     numberOfPlayers = db.numberOfPlayersInGame(gameId)
     
     for i in range(numberOfPlayers):
@@ -173,7 +184,7 @@ def getWinners(gameId, players):
     boardCards = []
     rankings = {}
     
-    _,board,_,_,_,_,_,_ = db.getGame(gameId)
+    _,board,_,_,_,_,_,_,_,_,_ = db.getGame(gameId)
     for i in board.split(":"):
         boardCards.append(pyDealerCardToDeucesCard(i))
     
@@ -193,7 +204,7 @@ def getWinners(gameId, players):
     return winners
 
 def isGameOver(gameId):
-    _,_,currentPlayer,dealer,_,pot,betToMatch,handLog = db.getGame(gameId)
+    _,_,currentPlayer,dealer,_,pot,betToMatch,handLog,_,_,_ = db.getGame(gameId)
     numberOfPlayers = db.numberOfPlayersInGame(gameId)
     
     numbernotElim = 0
@@ -207,7 +218,7 @@ def isGameOver(gameId):
     return True
 
 def showdown(gameId):
-    _,_,currentPlayer,dealer,_,pot,betToMatch,handLog = db.getGame(gameId)
+    _,_,currentPlayer,dealer,_,pot,betToMatch,handLog,_,_,_ = db.getGame(gameId)
     numberOfPlayers = db.numberOfPlayersInGame(gameId)
     
     board = db.getGame(gameId)[1]
@@ -269,7 +280,7 @@ def showdown(gameId):
         db.updatePlayer(gameId, i, "isAllIn = 0")
         
 def allAreAllIn(gameId):
-    _,_,currentPlayer,dealer,_,pot,betToMatch,handLog = db.getGame(gameId)
+    _,_,currentPlayer,dealer,_,pot,betToMatch,handLog,_,_,_ = db.getGame(gameId)
     numberOfPlayers = db.numberOfPlayersInGame(gameId)
     
     if nextPlayer(gameId) == -1:
@@ -284,7 +295,7 @@ def allAreAllIn(gameId):
     
 # Returns active player
 def nextRound(gameId):
-    _,board,currentPlayer,dealer,phase,pot,betToMatch,handLog = db.getGame(gameId)
+    _,board,currentPlayer,dealer,phase,pot,betToMatch,handLog,_,_,_ = db.getGame(gameId)
     # 0 - preflop
     # 1 - postflop
     # 2 - turn
@@ -337,7 +348,7 @@ def nextRound(gameId):
 
 # Returns tuple of next player
 def nextPlayer(gameId):
-    _,_,currentPlayer,dealer,_,pot,betToMatch,handLog = db.getGame(gameId)
+    _,_,currentPlayer,dealer,_,pot,betToMatch,handLog,_,_,_ = db.getGame(gameId)
     numberOfPlayers = db.numberOfPlayersInGame(gameId)
     
     for i in range(numberOfPlayers-1):
@@ -350,7 +361,7 @@ def nextPlayer(gameId):
     
 # Returns tuple of next dealer, sb, bb, and UTG
 def getNextStartingPlayers(gameId):
-    _,_,_,dealer,_,_,_,_ = db.getGame(gameId)
+    _,_,_,dealer,_,_,_,_,_,_,_ = db.getGame(gameId)
     
     db.updateGame(gameId, "currentPlayer = " + str(dealer))
     # Dealer moves to left

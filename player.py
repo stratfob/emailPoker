@@ -1,7 +1,7 @@
 import db
 
 def addToPot(gameId, player, chips, action):
-    _,_,_,_,_,pot,betToMatch,_ = db.getGame(gameId)
+    _,_,_,_,_,pot,betToMatch,_,_,_,_ = db.getGame(gameId)
     playerTuple = db.getPlayer(gameId, player)
     _,_,address,name,stack,_,_,_,_,amountPutInPot,_,amountPutInPotThisRound = playerTuple
     logStatement = ""
@@ -38,14 +38,13 @@ def addToPot(gameId, player, chips, action):
     return logStatement
 
 def takeFromPot(gameId, player, chips):
-    _,_,_,_,_,pot,_,_ = db.getGame(gameId)
+    _,_,_,_,_,pot,_,_,_,_,_ = db.getGame(gameId)
     playerTuple = db.getPlayer(gameId, player)
     _,_,address,name,stack,_,_,_,_,amountPutInPot,_,amountPutInPotThisRound = playerTuple
     logStatement = ""
    
     logStatement = "Player " + name + " takes " + str(chips) + " chips from the pot."
 
-    # TODO: error handling - if pot doesn't have enough
     #update player stack
     db.updatePlayer(gameId, player, "stack = " + str(stack + chips))
     
@@ -55,7 +54,7 @@ def takeFromPot(gameId, player, chips):
     
 
 def fold(gameId, playerTuple):
-    _,_,_,_,_,pot,betToMatch,handLog = db.getGame(gameId)
+    _,_,_,_,_,pot,betToMatch,handLog,_,_,_ = db.getGame(gameId)
     _,playerId,address,name,stack,_,_,_,_,amountPutInPot,_,amountPutInPotThisRound = playerTuple
 
     db.updatePlayer(gameId, playerId, "folded = 1")
@@ -63,7 +62,7 @@ def fold(gameId, playerTuple):
     
 
 def call(gameId, playerTuple):
-    _,_,_,_,_,pot,betToMatch,handLog = db.getGame(gameId)
+    _,_,_,_,_,pot,betToMatch,handLog,_,_,_ = db.getGame(gameId)
     _,playerId,address,name,stack,_,_,_,_,amountPutInPot,_,amountPutInPotThisRound = playerTuple
     
     chipsToPutIn = betToMatch - amountPutInPotThisRound
@@ -81,7 +80,7 @@ def call(gameId, playerTuple):
     
 
 def raiseTo(gameId, playerTuple, raiseToChips):
-    _,_,_,_,_,pot,betToMatch,handLog = db.getGame(gameId)
+    _,_,_,_,_,pot,betToMatch,handLog,_,_,_ = db.getGame(gameId)
     _,playerId,address,name,stack,_,_,_,_,amountPutInPot,_,amountPutInPotThisRound = playerTuple
     
     if betToMatch > raiseToChips:
@@ -89,7 +88,6 @@ def raiseTo(gameId, playerTuple, raiseToChips):
     elif betToMatch == raiseToChips:
         call(gameId, playerTuple)
         return True
-    # TODO: check for valid raise, i.e. correct betting increment
     else:
         
         chipsToPutIn = raiseToChips - amountPutInPotThisRound
@@ -111,7 +109,7 @@ def raiseTo(gameId, playerTuple, raiseToChips):
         return True
 
 def allIn(gameId, playerTuple):
-    _,_,_,_,_,pot,betToMatch,handLog = db.getGame(gameId)
+    _,_,_,_,_,pot,betToMatch,handLog,_,_,_ = db.getGame(gameId)
     _,playerId,address,name,stack,_,_,_,_,amountPutInPot,_,amountPutInPotThisRound = playerTuple
     
     return raiseTo(gameId, playerTuple, stack+amountPutInPotThisRound)

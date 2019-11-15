@@ -28,7 +28,7 @@ def fakeSendMail(receivers, title, body):
     
 
 def playerInfoLog(gameId, playerId):
-    _,board,_,_,_,pot,betToMatch,handLog = db.getGame(gameId)
+    _,board,_,_,_,pot,betToMatch,handLog,_,_,_ = db.getGame(gameId)
     string = "\r\n\r\nPlayers:"
     for i in range(db.numberOfPlayersInGame(gameId)):
         _,_,address,name,stack,_,isAllIn,folded,eliminated,_,isChecked,_ = db.getPlayer(gameId, i)
@@ -140,7 +140,7 @@ def readMail(imapper, mailId = None, fakeMail = None):
                             sendMail(nextPlayerTuple[2], gameId, db.getGame(gameId)[7] +
                                          playerInfoLog(gameId, nextPlayerTuple[1]) + instructions())
                         else:
-                            _,_,currentPlayer,dealer,_,pot,betToMatch,handLog = db.getGame(gameId)
+                            _,_,currentPlayer,dealer,_,pot,betToMatch,handLog,_,_,_ = db.getGame(gameId)
                             numberOfPlayers = db.numberOfPlayersInGame(gameId)
                             for i in range(numberOfPlayers):
                                 if not bool(db.getPlayer(gameId, i)[8]): # not eliminated
@@ -148,7 +148,7 @@ def readMail(imapper, mailId = None, fakeMail = None):
                                          "\r\nDealer, please call to continue.")
                             
                     else:
-                        _,_,currentPlayer,dealer,_,pot,betToMatch,handLog = db.getGame(gameId)
+                        _,_,currentPlayer,dealer,_,pot,betToMatch,handLog,_,_,_ = db.getGame(gameId)
                         numberOfPlayers = db.numberOfPlayersInGame(gameId)
                         
                         for i in range(numberOfPlayers):
@@ -182,23 +182,28 @@ def main():
     imapper = easyimap.connect('imap.gmail.com', login, password)
     
     if DEBUG:
-        gameId = readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("New", "ben1mail:Ben1:100\r\nben2mail:Ben2:100\r\nben3mail:Ben3:100\r\nben4mail:Ben4:100", "<ben.e.stratford@gmail.com>"))
-        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "All in", "<ben1mail>"))
-        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Fold", "<ben2mail>"))
-        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Fold", "<ben3mail>"))
-        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Fold", "<ben4mail>"))
+        gameId = readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("New", "90:0\r\nben1mail:Ben1:100\r\nben2mail:Ben2:100", "<ben.e.stratford@gmail.com>"))
         readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben1mail>"))
         readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben2mail>"))
-        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben3mail>"))
-        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben4mail>"))
- 
+        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben1mail>"))
+        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben2mail>"))
+        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben1mail>"))
+        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben2mail>"))
+        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben1mail>"))
+        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben2mail>"))
+        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben1mail>"))
+        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben2mail>"))
+        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben1mail>"))
+        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben2mail>"))
+        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben1mail>"))
+        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "CAll", "<ben2mail>"))
+        
 
     else:
         while True:
             try:
                 readMail(imapper)
             except Exception as e:
-                #TODO: add email details
                 sendMail(credentials.ownerEmail, "Crash", str(e))
 
     
