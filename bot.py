@@ -7,7 +7,7 @@ import player
 import uuid
 
 # Change below for console mails (debug) 
-DEBUG = True
+DEBUG = False
 
 login = credentials.log
 password = credentials.passw
