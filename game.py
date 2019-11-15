@@ -1,4 +1,5 @@
 import db
+import bot
 import random
 import player
 import pydealer as pd
@@ -21,11 +22,12 @@ def newGame(mailBody):
     return gameId
 
 def startGame(gameId):
-    #numberOfPlayers = db.numberOfPlayersInGame(gameId)
-    #dealer = random.randint(0, numberOfPlayers - 1)
+    numberOfPlayers = db.numberOfPlayersInGame(gameId)
+    dealer = random.randint(0, numberOfPlayers - 1)
 
     # for debugging, remove randomness
-    dealer = 0
+    if bot.DEBUG:
+        dealer = 0
     
     db.updateGame(gameId, "currentPlayer = " + str(dealer) + ", dealer = " + str(dealer))
     return startHand(gameId)
@@ -213,7 +215,7 @@ def showdown(gameId):
     if board != "":
         string += "\r\n\r\nThe board was : "
         for card in board.split(":"):
-            string += str(card) + ", "
+            string += cardToUnicode(str(card)) + ", "
         string = string[:-2] # get rid of trailing comma
     db.updateGame(gameId, "handLog = \"" + db.getGame(gameId)[7] + string + "\"")
     
@@ -312,16 +314,17 @@ def nextRound(gameId):
     if newPhase == 1:
         newBoard = deck.deal(3)
         
-        handLog = handLog + "\r\nFlop : " + str(newBoard[0]) + ", " + str(newBoard[1]) + ", " + str(newBoard[2])
+        handLog = handLog + "\r\nFlop : " + cardToUnicode(str(newBoard[0])) + ", " \
+            + cardToUnicode(str(newBoard[1])) + ", " + cardToUnicode(str(newBoard[2]))
         db.updateGame(gameId, "board = \"" + str(newBoard[0]) + ":" +
                       str(newBoard[1]) + ":" + str(newBoard[2]) + 
                       "\", betToMatch = 0, handLog = \"" + handLog + "\"")
     elif newPhase == 2 or newPhase == 3:
         newBoard = deck.deal(1)
         if newPhase == 2:
-            handLog = handLog + "\r\nTurn : " + str(newBoard[0])
+            handLog = handLog + "\r\nTurn : " + cardToUnicode(str(newBoard[0]))
         else:
-            handLog = handLog + "\r\nRiver : " + str(newBoard[0])
+            handLog = handLog + "\r\nRiver : " + cardToUnicode(str(newBoard[0]))
         db.updateGame(gameId, "board = \"" + board + ":" + str(newBoard[0]) +
                       "\", betToMatch = 0, handLog = \"" + handLog + "\"")
         
