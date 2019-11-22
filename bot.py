@@ -7,7 +7,7 @@ import player
 import uuid
 
 # Change below for console mails (debug) 
-DEBUG = False
+DEBUG = True
 
 login = credentials.log
 password = credentials.passw
@@ -142,12 +142,27 @@ def readMail(imapper, mailId = None, fakeMail = None):
                         else:
                             _,_,currentPlayer,dealer,_,pot,betToMatch,handLog,_,_,_ = db.getGame(gameId)
                             numberOfPlayers = db.numberOfPlayersInGame(gameId)
-                            for i in range(numberOfPlayers):
-                                if not bool(db.getPlayer(gameId, i)[8]): # not eliminated
-                                    sendMail(db.getPlayer(gameId, i)[2], gameId, db.getGame(gameId)[7] +
-                                         "\r\nDealer, please call to continue.")
                             
-                    else:
+                            while not game.isHandOver(gameId):
+                            
+                                for i in range(numberOfPlayers):
+                                    if not bool(db.getPlayer(gameId, i)[8]): # not eliminated
+                                        sendMail(db.getPlayer(gameId, i)[2], gameId, db.getGame(gameId)[7] +
+                                                 playerInfoLog(gameId, i))
+                            
+                                game.nextRound(gameId)
+                            
+                            game.showdown(gameId)
+                        
+                            # Send mail to all players
+                            for i in range(db.numberOfPlayersInGame(gameId)):
+                                sendMail(db.getPlayer(gameId, i)[2], gameId, 
+                                             db.getGame(gameId)[7])
+                            
+                            if not game.isGameOver(gameId):   
+                                nextPlayerTuple = db.getPlayer(gameId, game.startHand(gameId))
+                            
+                    if game.isGameOver(gameId):
                         _,_,currentPlayer,dealer,_,pot,betToMatch,handLog,_,_,_ = db.getGame(gameId)
                         numberOfPlayers = db.numberOfPlayersInGame(gameId)
                         
@@ -182,6 +197,7 @@ def main():
     imapper = easyimap.connect('imap.gmail.com', login, password)
     
     if DEBUG:
+         
         gameId = readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("New", "90:0\r\nben1mail:Ben1:100\r\nben2mail:Ben2:100", "<ben.e.stratford@gmail.com>"))
         readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben1mail>"))
         readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben2mail>"))
@@ -197,7 +213,7 @@ def main():
         readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben2mail>"))
         readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben1mail>"))
         readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "CAll", "<ben2mail>"))
-        
+               
 
     else:
         while True:
