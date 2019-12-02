@@ -262,6 +262,14 @@ def showdown(gameId):
         for i in isStillIn:
             if i[1] != 0:
                 newIsStillIn.append(i)
+            else:
+                if i[0] not in (j[0] for j in winners):
+                    playerTuple = db.getPlayer(gameId, i[0])
+                    logStatement = playerTuple[3] + " shows " + \
+                        cardToUnicode(playerTuple[5].split(":")[0]) + ", " +  \
+                        cardToUnicode(playerTuple[5].split(":")[1]) + " and was eliminated."
+                    handLog = db.getGame(gameId)[7]
+                    db.updateGame(gameId, "handLog = \"" + handLog + "\r\n" + logStatement + "\"")
                 
         isStillIn = newIsStillIn
         pot -= thisPot
