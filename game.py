@@ -267,7 +267,7 @@ def showdown(gameId):
                     playerTuple = db.getPlayer(gameId, i[0])
                     logStatement = playerTuple[3] + " shows " + \
                         cardToUnicode(playerTuple[5].split(":")[0]) + ", " +  \
-                        cardToUnicode(playerTuple[5].split(":")[1]) + " and was eliminated."
+                        cardToUnicode(playerTuple[5].split(":")[1])
                     handLog = db.getGame(gameId)[7]
                     db.updateGame(gameId, "handLog = \"" + handLog + "\r\n" + logStatement + "\"")
                 

@@ -7,7 +7,7 @@ import player
 import uuid
 
 # Change below for console mails (debug) 
-DEBUG = False
+DEBUG = True
 
 login = credentials.log
 password = credentials.passw
@@ -195,7 +195,19 @@ def main():
     if DEBUG:
          
         gameId = readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("New", "1:0\r\nben1mail:Ben1:100\r\nben2mail:Ben2:100\r\nben3mail:Ben3:90", "<ben.e.stratford@gmail.com>"))
-        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "All in", "<ben2mail>"))
+        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben2mail>"))
+        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben3mail>"))
+        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben1mail>"))
+        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben2mail>"))
+        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben3mail>"))
+        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben1mail>"))
+        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben2mail>"))
+        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben3mail>"))
+        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben1mail>"))
+        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben2mail>"))
+        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben3mail>"))
+        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben1mail>"))
+        readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben2mail>"))
         readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben3mail>"))
         readMail(imapper, str(uuid.uuid4()).replace('-',''), Mail("Re: " + gameId, "Call", "<ben1mail>"))
                
